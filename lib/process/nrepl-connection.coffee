@@ -117,6 +117,21 @@ class NReplConnection
     else
       code
 
+  # Wraps the given code inside a try-catch block designed to catch exceptions
+  # and return a complete stacktrace for it. If we simply return the stacktrace
+  # as a string, we won't be able to tell that an exception actually happened
+  # (it will just seem like the request is returning a regular string), so after
+  # serializing the stacktrace we need to rethrow it inside a vanilla exception.
+  wrapCodeInTryCatch: (code)->
+    "(do
+       (require '[clojure.repl :as repl])
+       (try
+         #{code}
+         (catch Throwable throwable
+           (binding [*err* (new java.io.StringWriter)]
+             (repl/pst throwable)
+             (throw (Exception. (str *err*)))))))"
+
   # Returns true if any of the messages indicate the namespace wasn't found.
   namespaceNotFound: (messages)->
     for msg in messages
@@ -147,8 +162,9 @@ class NReplConnection
     return null unless @connected()
 
     @optionsToSession options, (session)=>
-      # Wrap code in read eval to handle invalid code and reader conditionals
-      wrappedCode = @wrapCodeInReadEval(code)
+      # Wrap code inside a read eval to handle invalid code and reader conditionals,
+      # and inside a try-catch block to capture stacktraces.
+      wrappedCode = @wrapCodeInReadEval(@wrapCodeInTryCatch(code))
       ns = options.ns || @currentNs
 
       evalOptions = {op: "eval", code: wrappedCode, ns: ns, session: session}
@@ -172,9 +188,9 @@ class NReplConnection
             for msg in messages
               if msg.value
                 resultHandler(value: msg.value)
-              else if msg.err # Catch Leiningen errors
+              else if msg.err
                 resultHandler(error: msg.err)
-              else if msg.ex # Catch Boot errors
+              else if msg.ex
                 resultHandler(error: msg.ex)
         catch error
           console.error error
