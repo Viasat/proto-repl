@@ -6,6 +6,8 @@ DEFAULT_NS = "user"
 
 module.exports =
 
+# Testing
+
 class NReplConnection
   # The nrepl connection
   conn: null
