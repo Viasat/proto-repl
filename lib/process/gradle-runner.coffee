@@ -28,11 +28,11 @@ module.exports = (currentWorkingDir, args) ->
     if process.platform == "win32"
       # Windows
       gradleExec = "gradlew.bat"
-      replProcess = childProcess.spawn gradleExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true
+      replProcess = childProcess.spawn gradleExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true, detached: true
     else
       # Mac/Linux
       gradleExec = "gradlew"
-      replProcess = childProcess.spawn gradleExec, args, cwd: currentWorkingDir, env: filteredEnv
+      replProcess = childProcess.spawn gradleExec, args, cwd: currentWorkingDir, env: filteredEnv, detached: true
 
     replProcess.stdout.on 'data', processData
     replProcess.stderr.on 'data', processData
@@ -55,7 +55,7 @@ module.exports = (currentWorkingDir, args) ->
         when 'kill'
           # Send CTRL+D to Gradle to tell it to stop the NREPL gracefully
           replProcess.stdin.write("\x04")
-          run = () -> replProcess.kill("SIGKILL")
+          run = () -> process.kill(-replProcess.pid, 'SIGKILL')
           setTimeout run, 2500
     catch error
       console.error error

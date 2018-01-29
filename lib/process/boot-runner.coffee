@@ -41,7 +41,7 @@ module.exports = (currentWorkingDir, bootPath, args) ->
       envPath = filteredEnv["PATH"] || ""
       filteredEnv["PATH"] = envPath + path.delimiter + bootPath
 
-    replProcess = childProcess.spawn bootExec, args, cwd: currentWorkingDir, env: filteredEnv
+    replProcess = childProcess.spawn bootExec, args, cwd: currentWorkingDir, env: filteredEnv, detached: true
 
     replProcess.on 'error', (error)->
         processData("Error starting repl: " + error +
@@ -62,6 +62,6 @@ module.exports = (currentWorkingDir, bootPath, args) ->
         when 'input'
           replProcess.stdin.write(text)
         when 'kill'
-          replProcess.kill("SIGKILL")
+          process.kill(-replProcess.pid, 'SIGKILL')
     catch error
       console.error error
