@@ -1,5 +1,10 @@
 # Proto REPL
 
+## About this Repository / Fork
+We forked this repository to experiment and make improvements for internal use. Any improvements which can benefit the community will be PR'd back to the original project.
+
+
+## About Proto REPL
 Proto REPL is a Clojure development environment and REPL for [Atom](https://atom.io). See the [features](#features) and [installation instructions](#installation). See the [proto-repl-demo](https://github.com/jasongilman/proto-repl-demo) project for a demonstration of the features.
 
 ![A screenshot of Proto REPL](https://github.com/jasongilman/proto-repl/raw/master/front_image.gif)
