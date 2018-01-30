@@ -35,7 +35,7 @@ module.exports = (currentWorkingDir, leinPath, args) ->
         leinExec = path.join(leinPath, "lein.bat")
       envPath = filteredEnv["Path"] || ""
       filteredEnv["Path"] = envPath + path.delimiter + leinPath
-      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true, detached: true
+      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true
     else
       # Mac/Linux
       leinExec = "lein"
