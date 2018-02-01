@@ -112,12 +112,13 @@ class NReplConnection
 
   # Wraps the given code in an eval and a read-string. This is required for
   # handling reader conditionals. http://clojure.org/guides/reader_conditionals
+  # ^^^ this seems to be untrue. maybe required for older Clojure(Script)?
   wrapCodeInReadEval: (code)->
-    if @clojureVersion?.isReaderConditionalSupported() && @codeMayContainReaderConditional(code)
-      escapedStr = EditorUtils.escapeClojureCodeInString(code)
-      "(eval (read-string {:read-cond :allow} #{escapedStr}))"
-    else
-      code
+    #if @clojureVersion?.isReaderConditionalSupported() && @codeMayContainReaderConditional(code)
+    #  escapedStr = EditorUtils.escapeClojureCodeInString(code)
+    #  "(eval (read-string {:read-cond :allow} #{escapedStr}))"
+    #else
+    code
 
   # Wraps the given code inside a try-catch block designed to catch exceptions
   # and return a complete stacktrace for it. If we simply return the stacktrace
@@ -125,14 +126,18 @@ class NReplConnection
   # (it will just seem like the request is returning a regular string), so after
   # serializing the stacktrace we need to rethrow it inside a vanilla exception.
   wrapCodeInTryCatch: (code)->
-    "(do
-       (require '[clojure.repl :as repl])
-       (try
-         #{code}
-         (catch Throwable throwable
-           (binding [*err* (new java.io.StringWriter)]
-             (repl/pst throwable)
-             (throw (Exception. (str *err*)))))))"
+    "#?(:clj
+        (do
+          (require '[clojure.repl :as repl])
+          (try
+            #{code}
+            (catch Throwable throwable
+              (binding [*err* (new java.io.StringWriter)]
+                (repl/pst throwable)
+                (throw (Exception. (str *err*)))))))
+        :cljs
+        (do
+          #{code}))"
 
   # Returns true if any of the messages indicate the namespace wasn't found.
   namespaceNotFound: (messages)->
